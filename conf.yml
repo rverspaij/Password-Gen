@@ -1,0 +1,8 @@
+# Server Configuration
+server:
+  host: "mijndb"
+
+# User Configuration
+db:
+  user: "raoul"
+  pass: "ivof1rao"
