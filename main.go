@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -58,11 +60,13 @@ func main() {
 	err = createTable()
 	errorHandler(err)
 
-	_, err = checkExistense(password)
-	errorHandler(err)
-
-	err = addPass(password)
-	errorHandler(err)
+	passCheck, err := checkExistense("16c0397788")
+	if !passCheck {
+		errorHandler(err)
+	} else {
+		err = addPass(password)
+		errorHandler(err)
+	}
 }
 
 func errorHandler(err error) {
@@ -73,7 +77,9 @@ func errorHandler(err error) {
 	defer file.Close()
 
 	logger := log.New(file, "Custom Log", log.LstdFlags)
-	logger.Println(err)
+	if err != nil {
+		logger.Fatal(err)
+	}
 }
 
 func readConfig(cfg *Config) error {
@@ -87,7 +93,8 @@ func readConfig(cfg *Config) error {
 		return err
 	}
 	if cfg.Db.DbPass == "" || cfg.Db.DbUser == "" || cfg.Server.DbName == "" {
-		log.Fatal("empty fields")
+		err := errors.New("empty fields")
+		return err
 	}
 	return err
 }
@@ -101,7 +108,6 @@ func genPassword(passLength int, digits bool, symbols bool, lower bool, upper bo
 	if err != nil {
 		return password, err
 	}
-	log.Printf(password)
 	return password, err
 }
 
@@ -139,5 +145,6 @@ func addPass(content string) error {
 	VALUES($1)
 ;`
 	_, err := database.Exec(query, content)
+	fmt.Println("Password is added")
 	return err
 }
