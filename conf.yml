@@ -1,6 +1,6 @@
 # Server Configuration
 server:
-  host: "mijndb"
+  host: "mydb"
 
 # User Configuration
 db:
