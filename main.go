@@ -60,17 +60,20 @@ func main() {
 	err = createTable()
 	errorHandler(err)
 
-	passCheck, err := checkExistense("16c0397788")
+	passCheck := checkExistense(password)
+
 	if !passCheck {
+		err := errors.New("password already exists")
 		errorHandler(err)
-	} else {
-		err = addPass(password)
-		errorHandler(err)
+	} else if passCheck {
+		if err := addPass(password); err != nil {
+			errorHandler(err)
+		}
 	}
 }
 
 func errorHandler(err error) {
-	file, err1 := os.OpenFile("custom.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err1 := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err1 != nil {
 		log.Fatal(err1)
 	}
@@ -130,13 +133,13 @@ func createTable() error {
 	return err
 }
 
-func checkExistense(content string) (bool, error) {
+func checkExistense(content string) bool {
 	query := `SELECT * FROM password WHERE EXISTS (content);`
 	_, err := database.Exec(query)
 	if err != nil {
-		return false, err
+		return false
 	} else {
-		return true, nil
+		return true
 	}
 }
 
