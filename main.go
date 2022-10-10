@@ -45,17 +45,35 @@ func init() {
 
 func main() {
 	var config Config
+
 	password, err := genPassword(length, digits, symbols, lower, upper)
 	errorHandler(err)
-	readConfig(&config)
-	connectDB(&config)
-	createTable()
-	checkExistense(password)
-	addPass(password)
+
+	err = readConfig(&config)
+	errorHandler(err)
+
+	err = connectDB(&config)
+	errorHandler(err)
+
+	err = createTable()
+	errorHandler(err)
+
+	_, err = checkExistense(password)
+	errorHandler(err)
+
+	err = addPass(password)
+	errorHandler(err)
 }
 
-func errorHandler(error) {
+func errorHandler(err error) {
+	file, err1 := os.OpenFile("custom.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+	defer file.Close()
 
+	logger := log.New(file, "Custom Log", log.LstdFlags)
+	logger.Println(err)
 }
 
 func readConfig(cfg *Config) error {
@@ -106,14 +124,13 @@ func createTable() error {
 	return err
 }
 
-func checkExistense(content string) bool {
+func checkExistense(content string) (bool, error) {
 	query := `SELECT * FROM password WHERE EXISTS (content);`
 	_, err := database.Exec(query)
 	if err != nil {
-		log.Fatal("no")
-		return false
+		return false, err
 	} else {
-		return true
+		return true, nil
 	}
 }
 
