@@ -60,12 +60,12 @@ func main() {
 	err = createTable()
 	errorHandler(err)
 
-	passCheck := checkExistense(password)
+	passCheck, err := checkExistense(password)
 
-	if !passCheck {
+	if passCheck {
 		err := errors.New("password already exists")
 		errorHandler(err)
-	} else if passCheck {
+	} else {
 		if err := addPass(password); err != nil {
 			errorHandler(err)
 		}
@@ -133,14 +133,15 @@ func createTable() error {
 	return err
 }
 
-func checkExistense(content string) bool {
-	query := `SELECT * FROM password WHERE EXISTS (content);`
-	_, err := database.Exec(query)
+func checkExistense(content string) (bool, error) {
+	var check bool
+	query := fmt.Sprintf(`SELECT EXISTS(SELECT 1 FROM password WHERE content = '%s')`, content)
+	err := database.QueryRow(query).Scan(&check)
 	if err != nil {
-		return false
-	} else {
-		return true
+		return check, err
 	}
+	fmt.Println(check)
+	return check, nil
 }
 
 func addPass(content string) error {
