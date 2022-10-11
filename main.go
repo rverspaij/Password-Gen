@@ -15,13 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var database *sql.DB
-var length int
-var digits bool
-var symbols bool
-var lower bool
-var upper bool
-
+// Struct to safe information from yml file.
 type Config struct {
 	Server struct {
 		DbName string `yaml:"host"`
@@ -32,6 +26,14 @@ type Config struct {
 		DbPass string `yaml:"pass"`
 	} `yaml:"db"`
 }
+
+// Initialise variables.
+var database *sql.DB
+var length int
+var digits bool
+var symbols bool
+var lower bool
+var upper bool
 
 func init() {
 	flag.IntVar(&length, "l", 0, "Fill in length password!")
@@ -72,6 +74,7 @@ func main() {
 	}
 }
 
+// Handles errors to log file.
 func errorHandler(err error) {
 	file, err1 := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err1 != nil {
@@ -85,6 +88,7 @@ func errorHandler(err error) {
 	}
 }
 
+// Reads yml file and save it in struct.
 func readConfig(cfg *Config) error {
 	conf, err := os.ReadFile("conf.yml")
 	if err != nil {
@@ -102,6 +106,7 @@ func readConfig(cfg *Config) error {
 	return err
 }
 
+// Generate password.
 func genPassword(passLength int, digits bool, symbols bool, lower bool, upper bool) (string, error) {
 	rand.Seed(time.Now().UnixNano())
 	passDigits := rand.Intn(0 + passLength)
@@ -114,6 +119,7 @@ func genPassword(passLength int, digits bool, symbols bool, lower bool, upper bo
 	return password, err
 }
 
+// Connection to database.
 func connectDB(cfg *Config) error {
 	db, err := sql.Open("postgres", "dbname="+cfg.Server.DbName+" user="+cfg.Db.DbUser+" password="+cfg.Db.DbPass+" sslmode=disable")
 	if err != nil {
@@ -124,6 +130,7 @@ func connectDB(cfg *Config) error {
 	return err
 }
 
+// Create table if not exist.
 func createTable() error {
 	query := `CREATE TABLE IF NOT EXISTS password (
 		id		SERIAL	PRIMARY KEY,
@@ -133,6 +140,7 @@ func createTable() error {
 	return err
 }
 
+// Check if password already exists in database.
 func checkExistense(content string) (bool, error) {
 	var check bool
 	query := fmt.Sprintf(`SELECT EXISTS(SELECT 1 FROM password WHERE content = '%s')`, content)
@@ -144,6 +152,7 @@ func checkExistense(content string) (bool, error) {
 	return check, nil
 }
 
+// Add password.
 func addPass(content string) error {
 	query := `INSERT INTO password (content)
 	VALUES($1)
