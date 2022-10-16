@@ -20,7 +20,7 @@ var length int
 var digits bool
 var symbols bool
 var lower bool
-var upper bool
+var repeat bool
 
 type Config struct {
 	Server struct {
@@ -38,7 +38,7 @@ func init() {
 	flag.BoolVar(&digits, "digits", true, "Do you want digits?")
 	flag.BoolVar(&symbols, "symbols", true, "Do you want digits?")
 	flag.BoolVar(&lower, "lower", true, "Do you want digits?")
-	flag.BoolVar(&upper, "upper", true, "Do you want digits?")
+	flag.BoolVar(&repeat, "repeat", true, "Do you want digits?")
 	flag.Parse()
 	if length < 1 {
 		log.Fatal("Make sure your passlength is greater than 0!")
@@ -59,13 +59,15 @@ func main() {
 
 	err = createTable()
 	errorHandler(err)
+	//"5483m"
+	passCheck, err := checkExistense(password)
+	errorHandler(err)
+	fmt.Println(passCheck)
 
-	passCheck := checkExistense(password)
-
-	if !passCheck {
+	if passCheck {
 		err := errors.New("password already exists")
 		errorHandler(err)
-	} else if passCheck {
+	} else {
 		if err := addPass(password); err != nil {
 			errorHandler(err)
 		}
@@ -102,12 +104,12 @@ func readConfig(cfg *Config) error {
 	return err
 }
 
-func genPassword(passLength int, digits bool, symbols bool, lower bool, upper bool) (string, error) {
+func genPassword(passLength int, digits bool, symbols bool, lower bool, repeat bool) (string, error) {
 	rand.Seed(time.Now().UnixNano())
 	passDigits := rand.Intn(0 + passLength)
 	characters := passLength - passDigits
 	passSymbols := rand.Intn(0 + characters)
-	password, err := password.Generate(passLength, passDigits, passSymbols, lower, upper)
+	password, err := password.Generate(passLength, passDigits, passSymbols, lower, repeat)
 	if err != nil {
 		return password, err
 	}
@@ -133,13 +135,14 @@ func createTable() error {
 	return err
 }
 
-func checkExistense(content string) bool {
+func checkExistense(content string) (bool, error) {
 	query := `SELECT * FROM password WHERE EXISTS (content);`
-	_, err := database.Exec(query)
-	if err != nil {
-		return false
+	checker, err := database.Exec(query)
+	fmt.Println(checker)
+	if checker != nil {
+		return false, err
 	} else {
-		return true
+		return true, err
 	}
 }
 
