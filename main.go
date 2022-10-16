@@ -15,6 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+<<<<<<< HEAD
 var database *sql.DB
 var length int
 var digits bool
@@ -22,6 +23,9 @@ var symbols bool
 var lower bool
 var repeat bool
 
+=======
+// Struct to safe information from yml file.
+>>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 type Config struct {
 	Server struct {
 		DbName string `yaml:"host"`
@@ -32,6 +36,14 @@ type Config struct {
 		DbPass string `yaml:"pass"`
 	} `yaml:"db"`
 }
+
+// Initialise variables.
+var database *sql.DB
+var length int
+var digits bool
+var symbols bool
+var lower bool
+var upper bool
 
 func init() {
 	flag.IntVar(&length, "l", 0, "Fill in length password!")
@@ -64,6 +76,11 @@ func main() {
 	errorHandler(err)
 	fmt.Println(passCheck)
 
+<<<<<<< HEAD
+=======
+	passCheck, err := checkExistense(password)
+
+>>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 	if passCheck {
 		err := errors.New("password already exists")
 		errorHandler(err)
@@ -74,6 +91,7 @@ func main() {
 	}
 }
 
+// Handles errors to log file.
 func errorHandler(err error) {
 	file, err1 := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err1 != nil {
@@ -87,6 +105,7 @@ func errorHandler(err error) {
 	}
 }
 
+// Reads yml file and save it in struct.
 func readConfig(cfg *Config) error {
 	conf, err := os.ReadFile("conf.yml")
 	if err != nil {
@@ -104,7 +123,12 @@ func readConfig(cfg *Config) error {
 	return err
 }
 
+<<<<<<< HEAD
 func genPassword(passLength int, digits bool, symbols bool, lower bool, repeat bool) (string, error) {
+=======
+// Generate password.
+func genPassword(passLength int, digits bool, symbols bool, lower bool, upper bool) (string, error) {
+>>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 	rand.Seed(time.Now().UnixNano())
 	passDigits := rand.Intn(0 + passLength)
 	characters := passLength - passDigits
@@ -116,6 +140,7 @@ func genPassword(passLength int, digits bool, symbols bool, lower bool, repeat b
 	return password, err
 }
 
+// Connection to database.
 func connectDB(cfg *Config) error {
 	db, err := sql.Open("postgres", "dbname="+cfg.Server.DbName+" user="+cfg.Db.DbUser+" password="+cfg.Db.DbPass+" sslmode=disable")
 	if err != nil {
@@ -126,6 +151,7 @@ func connectDB(cfg *Config) error {
 	return err
 }
 
+// Create table if not exist.
 func createTable() error {
 	query := `CREATE TABLE IF NOT EXISTS password (
 		id		SERIAL	PRIMARY KEY,
@@ -135,6 +161,7 @@ func createTable() error {
 	return err
 }
 
+<<<<<<< HEAD
 func checkExistense(content string) (bool, error) {
 	query := `SELECT * FROM password WHERE EXISTS (content);`
 	checker, err := database.Exec(query)
@@ -143,9 +170,21 @@ func checkExistense(content string) (bool, error) {
 		return false, err
 	} else {
 		return true, err
+=======
+// Check if password already exists in database.
+func checkExistense(content string) (bool, error) {
+	var check bool
+	query := fmt.Sprintf(`SELECT EXISTS(SELECT 1 FROM password WHERE content = '%s')`, content)
+	err := database.QueryRow(query).Scan(&check)
+	if err != nil {
+		return check, err
+>>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 	}
+	fmt.Println(check)
+	return check, nil
 }
 
+// Add password.
 func addPass(content string) error {
 	query := `INSERT INTO password (content)
 	VALUES($1)
