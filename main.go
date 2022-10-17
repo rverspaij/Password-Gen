@@ -15,17 +15,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-<<<<<<< HEAD
-var database *sql.DB
-var length int
-var digits bool
-var symbols bool
-var lower bool
-var repeat bool
-
-=======
-// Struct to safe information from yml file.
->>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 type Config struct {
 	Server struct {
 		DbName string `yaml:"host"`
@@ -43,7 +32,7 @@ var length int
 var digits bool
 var symbols bool
 var lower bool
-var upper bool
+var repeat bool
 
 func init() {
 	flag.IntVar(&length, "l", 0, "Fill in length password!")
@@ -71,16 +60,11 @@ func main() {
 
 	err = createTable()
 	errorHandler(err)
-	//"5483m"
+
 	passCheck, err := checkExistense(password)
 	errorHandler(err)
 	fmt.Println(passCheck)
 
-<<<<<<< HEAD
-=======
-	passCheck, err := checkExistense(password)
-
->>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 	if passCheck {
 		err := errors.New("password already exists")
 		errorHandler(err)
@@ -123,12 +107,8 @@ func readConfig(cfg *Config) error {
 	return err
 }
 
-<<<<<<< HEAD
-func genPassword(passLength int, digits bool, symbols bool, lower bool, repeat bool) (string, error) {
-=======
 // Generate password.
 func genPassword(passLength int, digits bool, symbols bool, lower bool, upper bool) (string, error) {
->>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 	rand.Seed(time.Now().UnixNano())
 	passDigits := rand.Intn(0 + passLength)
 	characters := passLength - passDigits
@@ -161,16 +141,6 @@ func createTable() error {
 	return err
 }
 
-<<<<<<< HEAD
-func checkExistense(content string) (bool, error) {
-	query := `SELECT * FROM password WHERE EXISTS (content);`
-	checker, err := database.Exec(query)
-	fmt.Println(checker)
-	if checker != nil {
-		return false, err
-	} else {
-		return true, err
-=======
 // Check if password already exists in database.
 func checkExistense(content string) (bool, error) {
 	var check bool
@@ -178,7 +148,6 @@ func checkExistense(content string) (bool, error) {
 	err := database.QueryRow(query).Scan(&check)
 	if err != nil {
 		return check, err
->>>>>>> 333525b69f92f72601abac69f3a10ba4fa3afc35
 	}
 	fmt.Println(check)
 	return check, nil
